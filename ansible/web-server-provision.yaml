@@ -1,0 +1,95 @@
+- hosts: all
+  remote_user: ubuntu
+  become: true
+  
+  vars_files:
+    - vars/secret
+    
+  tasks:
+    - name: Update all packeges
+      apt:
+        update_cache: yes
+        name: "*"
+        state: latest
+
+
+    - name: Install dependencies
+      apt:
+        pkg:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - htop
+          - wget
+          - git
+          - mc
+          - python3-pip
+
+    - name: Install apt key
+      ansible.builtin.apt_key:
+        url: "https://download.docker.com/linux/ubuntu/gpg"
+        state: present 
+        keyring: /etc/apt/trusted.gpg.d/docker.gpg  
+
+    - name: Install docker repo
+      apt_repository:
+        repo:  "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu  {{ansible_distribution_release}} stable"  
+        state: present
+        filename: docker
+
+    - name: Install docker
+      apt:
+        update_cache: yes
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker
+
+    - name: Install python sdk
+      pip:
+        name:
+          - docker
+          - docker-compose 
+
+    - name: Install bottle python package
+      ansible.builtin.pip:
+        name: docker-compose  
+
+    - name: copy key to remote host
+      copy:
+        src: /home/mykola/.ssh/id_rsa
+        dest: /root/.ssh
+
+    - name: Check chmod key
+      file:
+        path: /root/.ssh/id_rsa
+        state: file
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: copy key to remote host
+      copy:
+        src: /home/mykola/.ssh/id_rsa
+        dest: /home/ubuntu/.ssh
+
+    - name: Check chmod key
+      file:
+        path: /home/ubuntu/.ssh/id_rsa
+        state: file
+        owner: ubuntu
+        group: ubuntu
+        mode: 0600    
+
+    - name: Read-write git checkout from github
+      ansible.builtin.git:
+        repo: git@github.com:nikolasht1/workshop-docker.git
+        dest: /home/ubuntu/Project/
+        
+#    - name: Run `docker-compose up`
+#      community.docker.docker_compose:
+#        project_src: /home/ubuntu/Project
+#        build: no
+#      register: output 
