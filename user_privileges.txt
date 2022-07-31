@@ -1,0 +1,23 @@
+# Paste on master
+CREATE USER 'replica'@'10.0.0.%' IDENTIFIED WITH mysql_native_password BY 'replicAcilper';
+GRANT REPLICATION SLAVE ON *.* TO 'replica'@'10.0.0.%';
+FLUSH PRIVILEGES;
+
+##
+SHOW MASTER STATUS\G
+File: mysql-binlog.000001
+Position: 847
+##
+
+# Copy on replica
+CHANGE MASTER TO MASTER_HOST='10.0.0.4' ,
+    MASTER_USER='replica' ,
+    MASTER_PASSWORD='replicAcilper' ,
+    MASTER_LOG_FILE='mysql-binlog.000001' ,
+    MASTER_LOG_POS=847;
+
+START REPLICA;
+SHOW REPLICA STATUS\G
+
+#earliest version
+START SLAVE;

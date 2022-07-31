@@ -1,2 +1,2 @@
-web-server ansible_host=3.73.116.209
-web1-server ansible_host=18.193.75.165
+master-server ansible_host=51.13.88.166 private_ip=10.0.0.4 server_id=101
+replica-server ansible_host=51.107.213.170 private_ip=10.0.0.5 server_id=102
